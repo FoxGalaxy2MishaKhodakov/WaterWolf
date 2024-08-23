@@ -4,13 +4,36 @@ import configparser
 import requests
 import zipfile
 import subprocess
-from PyQt5.QtCore import QUrl
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QToolBar, QAction, QTabWidget, QMessageBox
+from PyQt5.QtCore import QUrl, Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QToolBar, QAction, QTabWidget, QMessageBox, QStyleOptionTab, QStyle, QTabBar, QPushButton
 from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtGui import QIcon, QPainter, QPalette, QColor, QPixmap
 
+class RoundedTabBar(QTabBar):
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        option = QStyleOptionTab()
+
+        for i in range(self.count()):
+            self.initStyleOption(option, i)
+            # Округление вкладок на 20%
+            option.rect = self.tabRect(i)
+            painter.setRenderHint(QPainter.Antialiasing, True)
+            painter.setBrush(option.palette.window())
+            painter.setPen(Qt.NoPen)
+            rounded_rect = option.rect.adjusted(5, 5, -5, -5)
+            painter.drawRoundedRect(rounded_rect, rounded_rect.height() * 0.2, rounded_rect.height() * 0.2)
+            self.style().drawControl(QStyle.CE_TabBarTabLabel, option, painter)
+
+    def tabSizeHint(self, index):
+        size = super().tabSizeHint(index)
+        size.setHeight(35)  # Высота вкладки
+        size.setWidth(120)  # Ширина вкладки
+        return size
+    
 class Browser(QMainWindow):
     GITHUB_REPO = "FoxGalaxy2MishaKhodakov/WaterWolf"  # Замените на ваше имя пользователя и репозиторий
-    CURRENT_VERSION = "1.1.5"  # Версия текущего браузера
+    CURRENT_VERSION = "1.1.7"  # Версия текущего браузера
 
     def __init__(self):
         super().__init__()
@@ -21,12 +44,16 @@ class Browser(QMainWindow):
         config_path = os.path.join(sys.path[0], '..', 'config.ini')
         self.config.read(config_path)
 
+        # Устанавливаем путь к папке с иконками, которая находится на одну директорию ниже
+        icons_path = os.path.join(sys.path[0], '..', 'icons')
+
         # Проверяем обновления при запуске
         self.check_for_updates()
 
         # Создаем виджет с вкладками
         self.tabs = QTabWidget()
         self.tabs.setDocumentMode(True)
+        self.tabs.setTabBar(RoundedTabBar())
         self.tabs.tabBarDoubleClicked.connect(self.tab_open_doubleclick)
         self.tabs.currentChanged.connect(self.current_tab_changed)
         self.tabs.setTabsClosable(True)
@@ -35,25 +62,30 @@ class Browser(QMainWindow):
 
         # Панель инструментов
         navtb = QToolBar("Navigation")
+        navtb.setMovable(False)  # Запрещаем перетаскивание панели
         self.addToolBar(navtb)
 
         # Кнопка "Назад"
-        back_btn = QAction("Back", self)
+        back_btn = QAction(QIcon(os.path.join(icons_path, 'back.png')), "", self)
+        back_btn.setToolTip("Back")
         back_btn.triggered.connect(self.navigate_back)
         navtb.addAction(back_btn)
 
         # Кнопка "Вперед"
-        forward_btn = QAction("Forward", self)
+        forward_btn = QAction(QIcon(os.path.join(icons_path, 'forward.png')), "", self)
+        forward_btn.setToolTip("Forward")
         forward_btn.triggered.connect(self.navigate_forward)
         navtb.addAction(forward_btn)
 
         # Кнопка "Обновить"
-        reload_btn = QAction("Reload", self)
+        reload_btn = QAction(QIcon(os.path.join(icons_path, 'reload.png')), "", self)
+        reload_btn.setToolTip("Reload")
         reload_btn.triggered.connect(self.reload_page)
         navtb.addAction(reload_btn)
 
         # Кнопка "Домой"
-        home_btn = QAction("Home", self)
+        home_btn = QAction(QIcon(os.path.join(icons_path, 'home.png')), "", self)
+        home_btn.setToolTip("Home")
         home_btn.triggered.connect(self.navigate_home)
         navtb.addAction(home_btn)
 
@@ -63,7 +95,8 @@ class Browser(QMainWindow):
         navtb.addWidget(self.url_bar)
 
         # Кнопка "Новая вкладка"
-        new_tab_btn = QAction("New Tab", self)
+        new_tab_btn = QAction(QIcon(os.path.join(icons_path, 'new_tab.png')), "", self)
+        new_tab_btn.setToolTip("New Tab")
         new_tab_btn.triggered.connect(self.add_new_tab)
         navtb.addAction(new_tab_btn)
 
@@ -138,8 +171,18 @@ class Browser(QMainWindow):
         browser = QWebEngineView()
         browser.setUrl(qurl)
 
-        # Добавляем вкладку в виджет с вкладками
+        # Добавляем кнопку закрытия вкладки
+        close_btn = QPushButton()
+        close_btn.setIcon(QIcon(os.path.join(sys.path[0], '..', 'icons', 'close.png')))
+        close_btn.setIconSize(QPixmap(os.path.join(sys.path[0], '..', 'icons', 'close.png')).size())
+        close_btn.setFlat(True)  # Убираем фон кнопки
+        close_btn.clicked.connect(lambda: self.close_current_tab(self.tabs.indexOf(browser)))
+
+        # Создаем вкладку с кнопкой закрытия
         i = self.tabs.addTab(browser, label)
+        self.tabs.setTabText(i, label)
+        self.tabs.setTabIcon(i, QIcon(os.path.join(sys.path[0], '..', 'icons', 'tab_icon.png')))
+        self.tabs.tabBar().setTabButton(i, QTabBar.RightSide, close_btn)
         self.tabs.setCurrentIndex(i)
 
         # Обновляем адресную строку при переключении вкладок
