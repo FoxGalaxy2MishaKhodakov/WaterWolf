@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 import winshell
 from win32com.client import Dispatch
+import ctypes  # Для проверки прав администратора
 
 # Переменные
 zip_app = "browser.zip"  # Название ZIP-файла с программой
@@ -29,10 +30,18 @@ if hasattr(sys, '_MEIPASS'):
 else:
     embedded_zip_path = zip_app_path
 
+# Проверка прав администратора
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
 # Основное окно
 root = tk.Tk()
-root.title("Installer")
+root.title("Installer WaterWolf Web Browser")
 root.geometry("800x600")
+root.resizable(False, False)
 
 # Фон
 background_image = tk.PhotoImage(file=background_image_path)
@@ -42,19 +51,19 @@ background_label.place(relwidth=1, relheight=1)
 # Функция установки
 def install():
     install_button.pack_forget()
-    progress.pack(pady=20)
+    #progress.pack(pady=20)
     
     try:
         # Извлечение файлов
         with zipfile.ZipFile(embedded_zip_path, 'r') as zip_ref:
             zip_ref.extractall(install_path)
-        progress.step(50)
+        #progress.step(50)
         root.update_idletasks()
 
         # Создание ярлыков
         create_shortcut(install_path / "browser/browser.exe", desktop_path, f"{app_name}.lnk")
         create_shortcut(install_path / "browser/browser.exe", start_menu_path, f"{app_name}.lnk")
-        progress.step(50)
+        #progress.step(50)
         root.update_idletasks()
 
         messagebox.showinfo("Установка завершена", f"Программа {app_name} успешно установлена!")
@@ -77,7 +86,12 @@ def create_shortcut(target_exe, shortcut_dir, shortcut_name):
 install_button = tk.Button(root, text=f'Install "{app_name}"', command=install)
 install_button.pack(pady=250)
 
+# Проверка прав администратора при запуске
+if not is_admin():
+    messagebox.showerror("Ошибка", "Запуск программы возможен только от имени администратора.")
+    sys.exit()
+
 # Полоса прогресса
-progress = ttk.Progressbar(root, orient="horizontal", length=400, mode="determinate")
+#progress = ttk.Progressbar(root, orient="horizontal", length=400, mode="determinate")
 
 root.mainloop()
