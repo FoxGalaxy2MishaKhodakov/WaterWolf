@@ -1,15 +1,26 @@
 body {
     font-family: Arial, sans-serif;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100vh;
     margin: 0;
-    background-color: #f0f0f0;
+    background-repeat: no-repeat;
+    background-size: cover;
+    backdrop-filter: blur(5px);
+    transition: background-image 0.5s ease-in-out;
+}
+
+h1 {
+    font-size: 50px;
+    color: rgb(255, 255, 255);
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .container {
     text-align: center;
+    margin-bottom: 30px;
 }
 
 input {
@@ -17,10 +28,57 @@ input {
     padding: 10px;
     margin: 10px 0;
     font-size: 16px;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: Snow;
+    border: none;
+    transition: background-color 1s ease-in-out, border-radius 1s ease-in-out;
 }
 
-button {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
+input:hover {
+    border-radius: 10px;
+}
+
+.icon-links {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.icon-links a {
+    text-decoration: none;
+    color: white;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.3s ease;
+}
+
+.icon-links img {
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.icon-links a:hover img {
+    transform: scale(1.2);
+}
+
+.icon-links span {
+    margin-top: 5px;
+    font-size: 14px;
+    color: white;
+}
+
+a.copyright {
+    font-size: 15px;
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    color: rgba(255, 255, 255, 0.166);
+    text-decoration: none;
 }

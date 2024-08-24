@@ -3,15 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Поисковая страница</title>
+    <title>Start Page</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <h1>WaterWolf</h1>
-        <input type="text" id="search-query" placeholder="Введите запрос">
-        <button onclick="performSearch()">Поиск</button>
+        <input type="text" id="search-query" placeholder="Введите запрос" onkeydown="checkEnter(event)">
     </div>
-    <script src="script.js"></script>
+
+    <div class="icon-links">
+        <a href="https://www.youtube.com">
+            <img src="icons/1.png" alt="YouTube">
+            <span>YouTube</span>
+        </a>
+        <a href="https://www.facebook.com">
+            <img src="icons/2.png" alt="Facebook">
+            <span>Facebook</span>
+        </a>
+        <a href="https://chat.openai.com">
+            <img src="icons/3.png" alt="ChatGPT">
+            <span>ChatGPT</span>
+        </a>
+        <a href="https://telegram.org">
+            <img src="icons/4.png" alt="Telegram">
+            <span>Telegram</span>
+        </a>
+        <a href="https://www.spotify.com">
+            <img src="icons/5.png" alt="Spotify">
+            <span>Spotify</span>
+        </a>
+    </div>
+
+    <a href="https://www.youtube.com/@thepro2.0" class="copyright">FoxGalaxy23 2024</a>
+    <script src='script.js'></script>
 </body>
 </html>
