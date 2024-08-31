@@ -9,7 +9,30 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QWidget, QLi
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtGui import QIcon, QPainter, QPalette, QColor, QPixmap
 from PyQt5 import QtCore
+from PyQt5.QtWebEngineWidgets import QWebEnginePage
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, CallbackContext
+import ctypes
 
+class CustomWebEnginePage(QWebEnginePage):
+    def __init__(self, parent=None):
+        super(CustomWebEnginePage, self).__init__(parent)
+        self.browser_window = parent
+
+    def createWindow(self, window_type):
+        new_page = CustomWebEnginePage(self.browser_window)
+        new_tab = QWebEngineView()
+        new_tab.setPage(new_page)
+
+        # Добавление новой вкладки с кастомными кнопками
+        self.browser_window.add_new_tab_widget(new_tab, "New Tab")
+
+        # Подключаем сигналы для обновления заголовка и иконки
+        new_tab.titleChanged.connect(lambda title: self.browser_window.update_tab_title(title, new_tab))
+        new_tab.iconChanged.connect(lambda icon: self.browser_window.update_tab_icon(icon, new_tab))
+
+        return new_page
+    
 class RoundedTabBar(QTabBar):
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -34,11 +57,10 @@ class RoundedTabBar(QTabBar):
 
 class Browser(QMainWindow):
     GITHUB_REPO = "FoxGalaxy2MishaKhodakov/WaterWolf"  # Замените на ваше имя пользователя и репозиторий
-    CURRENT_VERSION = "1.2.2"  # Версия текущего браузера
+    CURRENT_VERSION = "1.2.8"  # Версия текущего браузера
 
     def __init__(self):
         super().__init__()
-
         # Убираем стандартную панель заголовка окна
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
 
@@ -70,7 +92,6 @@ class Browser(QMainWindow):
 
         # Добавляем первую вкладку
         self.add_new_tab(QUrl.fromLocalFile(os.path.join(sys.path[0], '..', 'start_page.html')), 'Home')
-
         # Отображаем окно
         self.show()
 
@@ -144,6 +165,9 @@ class Browser(QMainWindow):
         title_bar.mousePressEvent = self.mouse_press_event
         title_bar.mouseMoveEvent = self.mouse_move_event
 
+        icon_path = os.path.join(os.path.dirname(__file__), '../icon.ico')  # Путь к вашей иконке
+        self.setWindowIcon(QIcon(icon_path))
+
     def mouse_press_event(self, event):
         if event.button() == Qt.LeftButton:
             self.drag_start_position = event.globalPos()
@@ -165,36 +189,44 @@ class Browser(QMainWindow):
             self.add_new_tab()
 
     def add_new_tab(self, qurl=None, label="New Tab"):
-        if qurl is None or not isinstance(qurl, QUrl):
-            start_page_path = os.path.join(sys.path[0], '..', 'start_page.html')
-            qurl = QUrl.fromLocalFile(start_page_path)
+        if qurl is None:
+            qurl = QUrl.fromLocalFile(os.path.join(sys.path[0], '..', 'start_page.html'))
 
         browser = QWebEngineView()
+        browser.setPage(CustomWebEnginePage(self))
+
         browser.setUrl(qurl)
 
+        self.add_new_tab_widget(browser, label)
+
+        browser.urlChanged.connect(lambda qurl, browser=browser: self.update_urlbar(qurl, browser))
+        browser.titleChanged.connect(lambda title, browser=browser: self.update_tab_title(title, browser))
+        browser.iconChanged.connect(lambda icon: self.update_tab_icon(icon, browser))
+        self.update_urlbar(qurl, browser)
+
+    def add_new_tab_widget(self, webview, label="New Tab"):
+        i = self.tabs.addTab(webview, label)
+        self.tabs.setCurrentIndex(i)
+
+        # Добавление кастомной кнопки закрытия
         close_btn = QPushButton()
         close_btn.setIcon(QIcon(os.path.join(sys.path[0], '..', 'icons', 'close.png')))
         close_btn.setIconSize(QPixmap(os.path.join(sys.path[0], '..', 'icons', 'close.png')).size())
         close_btn.setFlat(True)
-        close_btn.clicked.connect(lambda: self.close_current_tab(self.tabs.indexOf(browser)))
-
-        i = self.tabs.addTab(browser, label)
-        self.tabs.setTabText(i, label)
-
-        # Заменяем иконку сайта
-        browser.iconChanged.connect(lambda icon, i=i: self.tabs.setTabIcon(i, icon))
+        close_btn.clicked.connect(lambda: self.close_current_tab(self.tabs.indexOf(webview)))
 
         self.tabs.tabBar().setTabButton(i, QTabBar.RightSide, close_btn)
-        self.tabs.setCurrentIndex(i)
 
-        browser.urlChanged.connect(lambda qurl, browser=browser: self.update_urlbar(qurl, browser))
-        browser.titleChanged.connect(lambda title, browser=browser: self.update_tab_title(title, browser))
-
-        self.update_urlbar(qurl, browser)
+    def update_tab_icon(self, icon, browser):
+        index = self.tabs.indexOf(browser)
+        if index != -1:
+            self.tabs.setTabIcon(index, icon)
 
     def close_current_tab(self, i):
         if self.tabs.count() > 1:
             self.tabs.removeTab(i)
+        else:
+            sys.exit()
 
     def navigate_home(self):
         start_page_path = os.path.join(sys.path[0], '..', 'start_page.html')
@@ -235,7 +267,17 @@ class Browser(QMainWindow):
         qurl = self.tabs.currentWidget().url()
         self.update_urlbar(qurl, self.tabs.currentWidget())
 
+    def is_user_admin(self):
+        try:
+            return ctypes.windll.shell32.IsUserAnAdmin()
+        except:
+            return False
+
+    def run_as_admin(self):
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
+
     def check_for_updates(self):
+
         try:
             response = requests.get(f"https://api.github.com/repos/{self.GITHUB_REPO}/releases/latest")
             latest_release = response.json()
@@ -247,16 +289,23 @@ class Browser(QMainWindow):
                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No
                 )
                 if reply == QMessageBox.Yes:
-                    asset_url = None
-                    for asset in latest_release["assets"]:
-                        if asset["name"] == "update.zip":
-                            asset_url = asset["browser_download_url"]
-                            break
-
-                    if asset_url:
-                        self.download_and_install_update(asset_url, latest_version)
+                    if not self.is_user_admin():
+                        QMessageBox.warning(self, "Требуются права администратора", "Для проверки обновлений запустите программу от имени администратора.")
+                        reply = QMessageBox.question(self, "Запуск от имени администратора", "Хотите перезапустить приложение с правами администратора?",
+                        QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                        if reply == QMessageBox.Yes:
+                            self.run_as_admin()
                     else:
-                        QMessageBox.critical(self, "Ошибка", "Не удалось найти файл update.zip в последнем релизе.")
+                        asset_url = None
+                        for asset in latest_release["assets"]:
+                            if asset["name"] == "update.zip":
+                                asset_url = asset["browser_download_url"]
+                                break
+
+                        if asset_url:
+                            self.download_and_install_update(asset_url, latest_version)
+                        else:
+                            QMessageBox.critical(self, "Ошибка", "Не удалось найти файл update.zip в последнем релизе.")
         except Exception as e:
             print(f"Ошибка при проверке обновлений: {e}")
 
