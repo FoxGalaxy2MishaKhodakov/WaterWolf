@@ -57,7 +57,7 @@ class RoundedTabBar(QTabBar):
 
 class Browser(QMainWindow):
     GITHUB_REPO = "FoxGalaxy2MishaKhodakov/WaterWolf"  # Замените на ваше имя пользователя и репозиторий
-    CURRENT_VERSION = "1.2.8"  # Версия текущего браузера
+    CURRENT_VERSION = "1.2.9"  # Версия текущего браузера
 
     def __init__(self):
         super().__init__()
@@ -349,6 +349,17 @@ class Browser(QMainWindow):
             return 'https://duckduckgo.com/?q='
         else:
             return 'https://www.google.com/search?q='
+    
+    def keyPressEvent(self, event):
+        # если нажата клавиша F11
+        if event.key() == QtCore.Qt.Key_F11:
+            # если в полный экран 
+            if self.isFullScreen():
+                # вернуть прежнее состояние
+                self.showNormal()
+            else:
+                # иначе во весь экран
+                self.showFullScreen()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
