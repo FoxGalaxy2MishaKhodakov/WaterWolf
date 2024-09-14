@@ -57,7 +57,7 @@ class RoundedTabBar(QTabBar):
 
 class Browser(QMainWindow):
     GITHUB_REPO = "FoxGalaxy2MishaKhodakov/WaterWolf"  # Замените на ваше имя пользователя и репозиторий
-    CURRENT_VERSION = "1.2.9"  # Версия текущего браузера
+    CURRENT_VERSION = "1.2.10"  # Версия текущего браузера
 
     def __init__(self):
         super().__init__()
