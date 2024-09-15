@@ -9,15 +9,22 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QWidget, QLi
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtGui import QIcon, QPainter, QPalette, QColor, QPixmap
 from PyQt5 import QtCore
-from PyQt5.QtWebEngineWidgets import QWebEnginePage
+from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineProfile
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, CallbackContext
 import ctypes
 
 class CustomWebEnginePage(QWebEnginePage):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, user_os="Windows"):
         super(CustomWebEnginePage, self).__init__(parent)
         self.browser_window = parent
+
+        # Формируем User-Agent с названием браузера WaterWolf и операционной системой
+        user_agent = f"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0) Gecko/20100101 Firefox/130.0"
+
+        # Устанавливаем кастомный User-Agent
+        self.profile = QWebEngineProfile.defaultProfile()
+        self.profile.setHttpUserAgent(user_agent)
 
     def createWindow(self, window_type):
         new_page = CustomWebEnginePage(self.browser_window)
@@ -57,7 +64,7 @@ class RoundedTabBar(QTabBar):
 
 class Browser(QMainWindow):
     GITHUB_REPO = "FoxGalaxy2MishaKhodakov/WaterWolf"  # Замените на ваше имя пользователя и репозиторий
-    CURRENT_VERSION = "1.2.10"  # Версия текущего браузера
+    CURRENT_VERSION = "1.2.11"  # Версия текущего браузера
 
     def __init__(self):
         super().__init__()
