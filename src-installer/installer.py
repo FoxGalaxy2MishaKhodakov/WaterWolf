@@ -42,16 +42,19 @@ def is_admin():
 def install_app():
     if not is_admin():
         messagebox.showerror("Ошибка", "Для установки требуется запуск от имени администратора.")
+        sys.exit()
         return
     with zipfile.ZipFile(embedded_zip_path, 'r') as zip_ref:
         zip_ref.extractall(install_path)
     create_shortcuts()
     messagebox.showinfo("Установка", "Приложение успешно установлено.")
+    sys.exit()
 
 # Функция обновления приложения
 def update_app():
     if not is_admin():
         messagebox.showerror("Ошибка", "Для обновления требуется запуск от имени администратора.")
+        sys.exit()
         return
     # Удаление старой версии приложения
     if install_path.exists():
@@ -63,11 +66,13 @@ def update_app():
 def uninstall_app():
     if not is_admin():
         messagebox.showerror("Ошибка", "Для удаления требуется запуск от имени администратора.")
+        sys.exit()
         return
     if install_path.exists():
         shutil.rmtree(install_path)
     remove_shortcuts()
     messagebox.showinfo("Удаление", "Приложение успешно удалено.")
+    sys.exit()
 
 # Функция создания ярлыков
 def create_shortcuts():
