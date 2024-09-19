@@ -421,15 +421,17 @@ class Browser(QMainWindow):
             self.clear_history_file()
 
     def open_history_file(self):
-        history_path = os.path.join(sys.path[0], '..', '..', 'history.txt')
-        # Открыть файл истории в текстовом редакторе по умолчанию
-        subprocess.Popen(['notepad.exe', history_path])
+        if is_user_admin():
+            history_path = os.path.join(sys.path[0], '..', '..', 'history.txt')
+            # Открыть файл истории в текстовом редакторе по умолчанию
+            subprocess.Popen(['notepad.exe', history_path])
 
     def clear_history_file(self):
-        history_path = os.path.join(sys.path[0], '..', '..', 'history.txt')
-        # Очистить файл истории
-        with open(history_path, 'w') as f:
-            f.write('')
+        if is_user_admin():
+            history_path = os.path.join(sys.path[0], '..', '..', 'history.txt')
+            # Очистить файл истории
+            with open(history_path, 'w') as f:
+                f.write('')
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
