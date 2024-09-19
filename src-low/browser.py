@@ -2,6 +2,7 @@ import sys
 import os
 import configparser
 import requests
+import datetime
 import zipfile
 import subprocess
 from PyQt5.QtCore import QUrl, Qt
@@ -25,6 +26,7 @@ class CustomWebEnginePage(QWebEnginePage):
         # Устанавливаем кастомный User-Agent
         self.profile = QWebEngineProfile.defaultProfile()
         self.profile.setHttpUserAgent(user_agent)
+        self.loadFinished.connect(self.handle_load_finished)
 
     def createWindow(self, window_type):
         new_page = CustomWebEnginePage(self.browser_window)
@@ -40,6 +42,35 @@ class CustomWebEnginePage(QWebEnginePage):
 
         return new_page
     
+    def handle_load_finished(self, success):
+        if success:  # Если страница успешно загрузилась
+            current_url = self.url().toString()
+            self.save_history(current_url)
+        if not success:  # Если страница не загрузилась
+            self.setHtml(self.custom_error_page())
+
+    def save_history(self, url):
+        history_dir = os.path.join(sys.path[0], '..', '..', 'history.txt')
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(history_dir, 'a') as f:
+            f.write(f'{current_time} - {url}\n')
+
+    def custom_error_page(self):
+        return """
+        <html>
+        <head><title>Ошибка загрузки</title></head>
+        <body>
+        <h1>Страница не найдена</h1>
+        <p>К сожалению, произошла ошибка при загрузке страницы.</p>
+        </body>
+        </html>
+        """
+    def save_history(self, url):
+        history_dir = os.path.join(sys.path[0], '..', '..', 'history.txt')
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(history_dir, 'a') as f:
+            f.write(f'{current_time} - {url}\n')
+
 class RoundedTabBar(QTabBar):
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -64,7 +95,7 @@ class RoundedTabBar(QTabBar):
 
 class Browser(QMainWindow):
     GITHUB_REPO = "FoxGalaxy2MishaKhodakov/WaterWolf"  # Замените на ваше имя пользователя и репозиторий
-    CURRENT_VERSION = "1.2.11"  # Версия текущего браузера
+    CURRENT_VERSION = "1.2.12"  # Версия текущего браузера
 
     def __init__(self):
         super().__init__()
@@ -358,16 +389,29 @@ class Browser(QMainWindow):
             return 'https://www.google.com/search?q='
     
     def keyPressEvent(self, event):
-        # если нажата клавиша F11
-        if event.key() == QtCore.Qt.Key_F11:
-            # если в полный экран 
+        if event.key() == Qt.Key_F11:
             if self.isFullScreen():
-                # вернуть прежнее состояние
                 self.showNormal()
             else:
-                # иначе во весь экран
                 self.showFullScreen()
 
+        if event.key() == Qt.Key_F9:
+            self.open_history_file()
+
+        if event.key() == Qt.Key_F8:
+            self.clear_history_file()
+
+    def open_history_file(self):
+        history_path = os.path.join(sys.path[0], '..', '..', 'history.txt')
+        # Открыть файл истории в текстовом редакторе по умолчанию
+        subprocess.Popen(['notepad.exe', history_path])
+
+    def clear_history_file(self):
+        history_path = os.path.join(sys.path[0], '..', '..', 'history.txt')
+        # Очистить файл истории
+        with open(history_path, 'w') as f:
+            f.write('')
+            
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     browser = Browser()
