@@ -15,6 +15,12 @@ from telegram import Update
 from telegram.ext import Updater, CommandHandler, CallbackContext
 import ctypes
 
+def is_user_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+    
 class CustomWebEnginePage(QWebEnginePage):
     def __init__(self, parent=None, user_os="Windows"):
         super(CustomWebEnginePage, self).__init__(parent)
@@ -41,19 +47,12 @@ class CustomWebEnginePage(QWebEnginePage):
         new_tab.iconChanged.connect(lambda icon: self.browser_window.update_tab_icon(icon, new_tab))
 
         return new_page
-    
+
     def handle_load_finished(self, success):
         if success:  # Если страница успешно загрузилась
             current_url = self.url().toString()
             self.save_history(current_url)
-        if not success:  # Если страница не загрузилась
-            self.setHtml(self.custom_error_page())
-
-    def save_history(self, url):
-        history_dir = os.path.join(sys.path[0], '..', '..', 'history.txt')
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with open(history_dir, 'a') as f:
-            f.write(f'{current_time} - {url}\n')
+        # Убираем else здесь, чтобы страница не отображала ошибку при любом сбое
 
     def custom_error_page(self):
         return """
@@ -65,11 +64,13 @@ class CustomWebEnginePage(QWebEnginePage):
         </body>
         </html>
         """
+
     def save_history(self, url):
-        history_dir = os.path.join(sys.path[0], '..', '..', 'history.txt')
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with open(history_dir, 'a') as f:
-            f.write(f'{current_time} - {url}\n')
+        if is_user_admin():
+            history_dir = os.path.join(sys.path[0], '..', '..', 'history.txt')
+            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            with open(history_dir, 'a') as f:
+                f.write(f'{current_time} - {url}\n')
 
 class RoundedTabBar(QTabBar):
     def paintEvent(self, event):
@@ -242,6 +243,24 @@ class Browser(QMainWindow):
         browser.iconChanged.connect(lambda icon: self.update_tab_icon(icon, browser))
         self.update_urlbar(qurl, browser)
 
+        browser.loadFinished.connect(self.check_for_errors)
+    
+    def check_for_errors(self, success):
+        if not success:
+            current_browser = self.tabs.currentWidget()
+            current_browser.setHtml(self.custom_error_page())
+
+    def custom_error_page(self):
+        return """
+        <html>
+        <head><title>Ошибка загрузки</title></head>
+        <body>
+        <h1>Страница не найдена</h1>
+        <p>К сожалению, произошла ошибка при загрузке страницы.</p>
+        </body>
+        </html>
+        """
+
     def add_new_tab_widget(self, webview, label="New Tab"):
         i = self.tabs.addTab(webview, label)
         self.tabs.setCurrentIndex(i)
@@ -411,7 +430,7 @@ class Browser(QMainWindow):
         # Очистить файл истории
         with open(history_path, 'w') as f:
             f.write('')
-            
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     browser = Browser()
