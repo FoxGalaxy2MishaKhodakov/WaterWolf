@@ -6,7 +6,7 @@ import datetime
 import zipfile
 import subprocess
 from PyQt5.QtCore import QUrl, Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QWidget, QLineEdit, QToolBar, QAction, QTabWidget, QMessageBox, QStyleOptionTab, QStyle, QTabBar, QPushButton
+from PyQt5.QtWidgets import QApplication, QInputDialog, QMainWindow, QHBoxLayout, QWidget, QLineEdit, QToolBar, QAction, QTabWidget, QMessageBox, QStyleOptionTab, QStyle, QTabBar, QPushButton
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtGui import QIcon, QPainter, QPalette, QColor, QPixmap
 from PyQt5 import QtCore
@@ -52,6 +52,10 @@ class CustomWebEnginePage(QWebEnginePage):
         if success:  # Если страница успешно загрузилась
             current_url = self.url().toString()
             self.save_history(current_url)
+            if self.is_site_blocked(current_url):
+                self.setHtml(self.custom_blocked_page())
+            else:
+                self.save_history(current_url)
         # Убираем else здесь, чтобы страница не отображала ошибку при любом сбое
 
     def custom_error_page(self):
@@ -71,6 +75,28 @@ class CustomWebEnginePage(QWebEnginePage):
             current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             with open(history_dir, 'a') as f:
                 f.write(f'{current_time} - {url}\n')
+
+    def is_site_blocked(self, url):
+        blacklist_path = os.path.join(sys.path[0], '..', '..', 'black-web.txt')  # Путь к черному списку
+        if os.path.exists(blacklist_path):
+            with open(blacklist_path, 'r') as f:
+                blocked_sites = f.read().splitlines()
+                for blocked_site in blocked_sites:
+                    if blocked_site in url:
+                        return True
+        return False
+
+    def custom_blocked_page(self):
+        return """
+        <html>
+        <head><title>Сайт заблокирован</title></head>
+        <body>
+        <h1>Сайт заблокирован</h1>
+        <p>Доступ к этому сайту был ограничен администратором.</p>
+        </body>
+        </html>
+        """
+
 
 class RoundedTabBar(QTabBar):
     def paintEvent(self, event):
@@ -96,10 +122,14 @@ class RoundedTabBar(QTabBar):
 
 class Browser(QMainWindow):
     GITHUB_REPO = "FoxGalaxy2MishaKhodakov/WaterWolf"  # Замените на ваше имя пользователя и репозиторий
-    CURRENT_VERSION = "1.2.14"  # Версия текущего браузера
+    CURRENT_VERSION = "1.2.15"  # Версия текущего браузера
 
     def __init__(self):
         super().__init__()
+
+        if not self.ask_for_password():
+            QMessageBox.critical(self, 'Ошибка', 'Три неудачные попытки ввода пароля. Браузер будет закрыт.')
+            sys.exit()
         # Убираем стандартную панель заголовка окна
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
 
@@ -320,6 +350,27 @@ class Browser(QMainWindow):
         if browser == self.tabs.currentWidget():
             self.url_bar.setText(qurl.toString())
 
+    def get_password(self):
+        password_path = os.path.join(sys.path[0], '..', 'password.txt')
+        if os.path.exists(password_path):
+            with open(password_path, 'r') as f:
+                password = f.read().strip()
+                return password if password else None
+        return None
+    
+    def ask_for_password(self):
+        stored_password = self.get_password()
+        if stored_password:
+            attempts = 3
+            for _ in range(attempts):
+                password, ok = QInputDialog.getText(self, 'Пароль', 'Введите пароль:', QLineEdit.Password)
+                if ok and password == stored_password:
+                    return True
+                QMessageBox.warning(self, 'Неправильный пароль', f'Осталось попыток: {attempts - 1}')
+            return False
+        return True  # Если пароля нет, то можно запускать браузер без проверки
+
+
     def current_tab_changed(self, i):
         qurl = self.tabs.currentWidget().url()
         self.update_urlbar(qurl, self.tabs.currentWidget())
@@ -334,7 +385,10 @@ class Browser(QMainWindow):
         ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
 
     def check_for_updates(self):
-
+        if not self.ask_for_password():
+            QMessageBox.critical(self, 'Ошибка', 'Три неудачные попытки ввода пароля. Обновление невозможно.')
+            return
+        
         try:
             response = requests.get(f"https://api.github.com/repos/{self.GITHUB_REPO}/releases/latest")
             latest_release = response.json()
