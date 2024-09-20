@@ -1,4 +1,5 @@
-<img src="https://github.com/FoxGalaxy2MishaKhodakov/WaterWolf/blob/main/GitHubSRC/logo.png" alt="Logo"> 
+[<img src="https://github.com/FoxGalaxy2MishaKhodakov/WaterWolf/blob/main/GitHubSRC/logo.png" alt="Logo"> ](https://github.com/FoxGalaxy2MishaKhodakov/WaterWolf/blob/main/GitHubSRC/logo.png)
+
 WaterWolf Web Browser
 =====================
 
