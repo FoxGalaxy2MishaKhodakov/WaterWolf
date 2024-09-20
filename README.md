@@ -1,9 +1,25 @@
-# What is WaterWolf?
-<img src="https://github.com/FoxGalaxy2MishaKhodakov/WaterWolf/blob/main/GitHubSRC/Screenshot.png"/>
-Hello everyone today I wanted to introduce a simple web browser written in Python called WaterWolf it uses the PyQt libraries it can be used as a basis for developing your own web browser
-# How build it?
-Step 1 - create folder ready
-Step 2 - Open compile-cli.cmd
-# How install it?
-Step 1 - open installer.exe with admin access
-Step 2 - click to install button
+# ![WaterWolf Logo]([path_to_logo.png](https://github.com/FoxGalaxy2MishaKhodakov/WaterWolf/blob/main/GitHubSRC/logo.png)) WaterWolf Web Browser
+WaterWolf Web Browser
+=====================
+
+WaterWolf is a lightweight web browser built using Python and PyQt. It comes as a Windows EXE installer for easy installation.
+
+Features:
+---------
+- Basic web browsing functionality
+- Support for multiple tabs
+- Rendered using QtWebEngine
+
+Installation:
+-------------
+1. Download the WaterWolf installer: [Insert download link here]
+2. Run the installer and follow the on-screen instructions.
+3. Launch WaterWolf via the desktop shortcut.
+
+How to Build:
+-------------
+To compile the project into an EXE, run the `compile-cli.cmd` file.
+
+License:
+--------
+This project is licensed under the BSD-3-Clause. See the LICENSE file for more information.
