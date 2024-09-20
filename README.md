@@ -1,5 +1,6 @@
 <img src="https://github.com/FoxGalaxy2MishaKhodakov/WaterWolf/blob/main/GitHubSRC/logo.png" alt="Logo"> 
 WaterWolf Web Browser
+=====================
 
 WaterWolf is a lightweight web browser built using Python and PyQt. It comes as a Windows EXE installer for easy installation.
 
