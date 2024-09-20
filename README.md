@@ -1,4 +1,4 @@
-# ![WaterWolf Logo]([path_to_logo.png](https://github.com/FoxGalaxy2MishaKhodakov/WaterWolf/blob/main/GitHubSRC/logo.png)) WaterWolf Web Browser
+<img src="https://github.com/FoxGalaxy2MishaKhodakov/WaterWolf/blob/main/GitHubSRC/logo.png" alt="Logo"> 
 WaterWolf Web Browser
 =====================
 
