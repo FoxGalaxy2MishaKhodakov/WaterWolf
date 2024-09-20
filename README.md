@@ -1,5 +1,5 @@
 # What is WaterWolf?
-![Screenshoot]([https://github.com/jon/coolproject/raw/master/image/image.png](https://github.com/FoxGalaxy2MishaKhodakov/WaterWolf/blob/main/GitHubSRC/Screenshot.png))
+<img src="https://github.com/FoxGalaxy2MishaKhodakov/WaterWolf/blob/main/GitHubSRC/Screenshot.png"/>
 Hello everyone today I wanted to introduce a simple web browser written in Python called WaterWolf it uses the PyQt libraries it can be used as a basis for developing your own web browser
 # How build it?
 Step 1 - create folder ready
