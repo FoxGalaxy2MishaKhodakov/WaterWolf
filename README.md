@@ -1,6 +1,5 @@
 <img src="https://github.com/FoxGalaxy2MishaKhodakov/WaterWolf/blob/main/GitHubSRC/logo.png" alt="Logo"> 
 WaterWolf Web Browser
-=====================
 
 WaterWolf is a lightweight web browser built using Python and PyQt. It comes as a Windows EXE installer for easy installation.
 
@@ -12,7 +11,7 @@ Features:
 
 Installation:
 -------------
-1. Download the WaterWolf installer: [Insert download link here]
+1. Download the WaterWolf installer: [[Download](https://github.com/FoxGalaxy2MishaKhodakov/WaterWolf/releases/download/1.2.14/installer.exe)]
 2. Run the installer and follow the on-screen instructions.
 3. Launch WaterWolf via the desktop shortcut.
 
