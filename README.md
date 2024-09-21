@@ -10,11 +10,13 @@ Features:
 - Basic web browsing functionality
 - Support for multiple tabs
 - Rendered using QtWebEngine
+- Password System
+- Blacklist web sites
 
 Installation:
 -------------
-1. Download the WaterWolf installer: [[Download](https://github.com/FoxGalaxy2MishaKhodakov/WaterWolf/releases/download/1.2.14/installer.exe)]
-2. Run the installer and follow the on-screen instructions.
+1. Download the WaterWolf installer: [[Download](https://github.com/FoxGalaxy2MishaKhodakov/WaterWolf/releases/download/1.2.15/installer.exe)]
+2. Run the installer with access administrator and follow the on-screen instructions.
 3. Launch WaterWolf via the desktop shortcut.
 
 How to Build:
