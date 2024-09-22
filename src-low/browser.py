@@ -78,13 +78,37 @@ class CustomWebEnginePage(QWebEnginePage):
                 f.write(f'{current_time} - {url}\n')
 
     def is_site_blocked(self, url):
-        blacklist_path = os.path.join(sys.path[0], '..', '..', 'black-web.txt')  # Путь к черному списку
+        # Чтение черного списка сайтов
+        blacklist_path = os.path.join(sys.path[0], '..', '..', 'black-web.txt')
+
+        # Ключевые слова для блокировки (казино, ставки, торренты, порно и т.д.)
+        blocked_keywords = [
+            "casino", "bet", "torrent", "lottery", "hack", "malware", "phish",
+            "porn", "xxx", "adult", "sex", "erotic", "nude", "cams"
+        ]
+
+        # Блокируемые доменные зоны
+        blocked_domains = [".ru", ".bet", ".casino", ".torrent", ".lottery", ".poker", 
+                           ".xxx", ".adult", ".sex", ".porn", ".cam"]
+
         if os.path.exists(blacklist_path):
             with open(blacklist_path, 'r') as f:
                 blocked_sites = f.read().splitlines()
+                # Проверка по черному списку URL
                 for blocked_site in blocked_sites:
                     if blocked_site in url:
                         return True
+
+        # Проверка по ключевым словам
+        for keyword in blocked_keywords:
+            if keyword in url:
+                return True
+
+        # Проверка по доменным зонам
+        for domain in blocked_domains:
+            if domain in url:
+                return True
+
         return False
 
     def custom_blocked_page(self):
