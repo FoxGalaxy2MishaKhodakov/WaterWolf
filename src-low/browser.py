@@ -3,10 +3,11 @@ import os
 import configparser
 import requests
 import datetime
+import random
 import zipfile
 import subprocess
 from PyQt5.QtCore import QUrl, Qt
-from PyQt5.QtWidgets import QApplication, QInputDialog, QMainWindow, QHBoxLayout, QWidget, QLineEdit, QToolBar, QAction, QTabWidget, QMessageBox, QStyleOptionTab, QStyle, QTabBar, QPushButton
+from PyQt5.QtWidgets import QApplication, QProgressBar, QInputDialog, QMainWindow, QHBoxLayout, QWidget, QLineEdit, QToolBar, QAction, QTabWidget, QMessageBox, QStyleOptionTab, QStyle, QTabBar, QPushButton
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtGui import QIcon, QPainter, QPalette, QColor, QPixmap
 from PyQt5 import QtCore
@@ -122,7 +123,7 @@ class RoundedTabBar(QTabBar):
 
 class Browser(QMainWindow):
     GITHUB_REPO = "FoxGalaxy2MishaKhodakov/WaterWolf"  # Замените на ваше имя пользователя и репозиторий
-    CURRENT_VERSION = "1.2.15"  # Версия текущего браузера
+    CURRENT_VERSION = "1.3.0"  # Версия текущего браузера
 
     def __init__(self):
         super().__init__()
@@ -164,6 +165,7 @@ class Browser(QMainWindow):
         # Отображаем окно
         self.show()
 
+
     def create_custom_title_bar(self):
         # Создаем кастомную панель заголовка
         title_bar = QWidget()
@@ -175,54 +177,69 @@ class Browser(QMainWindow):
                 padding: 5px;
             }
             QPushButton {
-                background-color: #4A4A4A;
+                background-color: #00000000;
                 border: none;
                 color: white;
                 padding: 5px;
                 margin: 2px;
             }
             QPushButton:hover {
-                background-color: #6A6A6A;
+                background-color: #00000000;
             }
         """)
         title_bar_layout = QHBoxLayout()
 
-        # Кнопка "Назад"
-        back_btn = QPushButton("←")
+        # Путь к иконкам
+        icon_path = os.path.join(sys.path[0], '..', 'icons')
+
+        # Кнопка "Назад" с изображением
+        back_btn = QPushButton()
+        back_btn.setIcon(QIcon(os.path.join(icon_path, 'back.png')))
         back_btn.clicked.connect(self.navigate_back)
         title_bar_layout.addWidget(back_btn)
 
-        # Кнопка "Вперед"
-        forward_btn = QPushButton("→")
+        # Кнопка "Вперед" с изображением
+        forward_btn = QPushButton()
+        forward_btn.setIcon(QIcon(os.path.join(icon_path, 'forward.png')))
         forward_btn.clicked.connect(self.navigate_forward)
         title_bar_layout.addWidget(forward_btn)
 
-        # Кнопка "Обновить"
-        reload_btn = QPushButton("↻")
+        # Кнопка "Обновить" с изображением
+        reload_btn = QPushButton()
+        reload_btn.setIcon(QIcon(os.path.join(icon_path, 'reload.png')))
         reload_btn.clicked.connect(self.reload_page)
         title_bar_layout.addWidget(reload_btn)
 
-        # Кнопка "Домой"
-        home_btn = QPushButton("🏠")
+        # Кнопка "Домой" с изображением
+        home_btn = QPushButton()
+        home_btn.setIcon(QIcon(os.path.join(icon_path, 'home.png')))
         home_btn.clicked.connect(self.navigate_home)
         title_bar_layout.addWidget(home_btn)
 
-        # Адресная строка
+        # Прогресс-бар
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setVisible(False)  # Прячем его по умолчанию
+        title_bar_layout.addWidget(self.progress_bar)
+
+        # Поле URL
         self.url_bar = QLineEdit()
         self.url_bar.returnPressed.connect(self.navigate_to_url)
         title_bar_layout.addWidget(self.url_bar)
 
         # Кнопки управления окном
-        minimize_btn = QPushButton("–")
-        maximize_btn = QPushButton("[]")
-        close_btn = QPushButton("X")
-
+        minimize_btn = QPushButton()
+        minimize_btn.setIcon(QIcon(os.path.join(icon_path, 'minimize.png')))
         minimize_btn.clicked.connect(self.showMinimized)
-        maximize_btn.clicked.connect(self.toggle_maximized)
-        close_btn.clicked.connect(self.close)
-
         title_bar_layout.addWidget(minimize_btn)
+
+        maximize_btn = QPushButton()
+        maximize_btn.setIcon(QIcon(os.path.join(icon_path, 'maximize.png')))
+        maximize_btn.clicked.connect(self.toggle_maximized)
         title_bar_layout.addWidget(maximize_btn)
+
+        close_btn = QPushButton()
+        close_btn.setIcon(QIcon(os.path.join(icon_path, 'closer.png')))
+        close_btn.clicked.connect(self.close)
         title_bar_layout.addWidget(close_btn)
 
         title_bar.setLayout(title_bar_layout)
@@ -230,12 +247,23 @@ class Browser(QMainWindow):
         # Устанавливаем кастомную панель заголовка
         self.setMenuWidget(title_bar)
 
-        # Подключаем обработчик событий для перетаскивания окна
-        title_bar.mousePressEvent = self.mouse_press_event
-        title_bar.mouseMoveEvent = self.mouse_move_event
+    def on_load_started(self):
+        # Скрываем строку URL и показываем прогресс-бар
+        self.url_bar.setVisible(False)
+        self.progress_bar.setVisible(True)
 
-        icon_path = os.path.join(os.path.dirname(__file__), '../icon.ico')  # Путь к вашей иконке
-        self.setWindowIcon(QIcon(icon_path))
+        # Устанавливаем случайный цвет прогресс-бара
+        random_color = QColor(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        self.progress_bar.setStyleSheet(f"QProgressBar::chunk {{ background-color: {random_color.name()}; }}")
+
+    def on_load_progress(self, progress):
+        # Обновляем прогресс-бар
+        self.progress_bar.setValue(progress)
+
+    def on_load_finished(self, success):
+        # Когда загрузка завершена, прячем прогресс-бар и показываем строку URL
+        self.progress_bar.setVisible(False)
+        self.url_bar.setVisible(True)
 
     def mouse_press_event(self, event):
         if event.button() == Qt.LeftButton:
@@ -267,6 +295,10 @@ class Browser(QMainWindow):
         browser.setUrl(qurl)
 
         self.add_new_tab_widget(browser, label)
+
+        browser.loadStarted.connect(self.on_load_started)
+        browser.loadProgress.connect(self.on_load_progress)
+        browser.loadFinished.connect(self.on_load_finished)
 
         browser.urlChanged.connect(lambda qurl, browser=browser: self.update_urlbar(qurl, browser))
         browser.titleChanged.connect(lambda title, browser=browser: self.update_tab_title(title, browser))
