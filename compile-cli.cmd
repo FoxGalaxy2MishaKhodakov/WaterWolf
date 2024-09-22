@@ -11,16 +11,16 @@ xcopy "%~dp0src-low\update.bat" "%~dp0dist\browser\" /Y
 xcopy "%~dp0src-low\black-web.txt" "%~dp0dist\browser\" /Y
 
 :: Переход в директорию с файлами
-cd /d "C:\Users\MihaB\Desktop\kak\dist\browser"
+cd /d "%~dp0dist\browser"
 
 :: Архивация папки _internal и файла browser.exe с black-web.txt в update.zip
-powershell Compress-Archive -Path "_internal", "browser.exe", "black-web.txt" -DestinationPath "C:\Users\MihaB\Desktop\kak\ready\update.zip"
+powershell Compress-Archive -Path "_internal", "browser.exe", "black-web.txt" -DestinationPath "%~dp0ready\update.zip"
 
 :: Архивация всей папки browser в browser.zip
 cd ..
-powershell Compress-Archive -Path "browser" -DestinationPath "C:\Users\MihaB\Desktop\kak\src-installer\browser.zip"
+powershell Compress-Archive -Path "browser" -DestinationPath "%~dp0src-installer\browser.zip"
 
-pyinstaller --noconfirm --onefile --windowed --icon "C:\Users\MihaB\Desktop\kak\src-low\icon.ico" --add-data "C:\Users\MihaB\Desktop\kak\src-installer\background.png;." --add-data "C:\Users\MihaB\Desktop\kak\src-installer\browser.zip;."  "C:\Users\MihaB\Desktop\kak\src-installer\installer.py"
+pyinstaller --noconfirm --onefile --windowed --icon "%~dp0src-low\icon.ico" --add-data "%~dp0src-installer\background.png;." --add-data "%~dp0src-installer\browser.zip;."  "%~dp0src-installer\installer.py"
 xcopy "%~dp0dist\dist\installer.exe" "%~dp0ready\" /Y
 
 if exist "build" (
