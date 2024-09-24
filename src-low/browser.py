@@ -16,6 +16,9 @@ from telegram import Update
 from telegram.ext import Updater, CommandHandler, CallbackContext
 import ctypes
 
+#Параметры
+safe_mode = 0
+
 def is_user_admin():
     try:
         return ctypes.windll.shell32.IsUserAnAdmin()
@@ -53,10 +56,11 @@ class CustomWebEnginePage(QWebEnginePage):
         if success:  # Если страница успешно загрузилась
             current_url = self.url().toString()
             self.save_history(current_url)
-            if self.is_site_blocked(current_url):
-                self.setHtml(self.custom_blocked_page())
-            else:
-                self.save_history(current_url)
+            if safe_mode == 1:
+                if self.is_site_blocked(current_url):
+                    self.setHtml(self.custom_blocked_page())
+                else:
+                    self.save_history(current_url)
         # Убираем else здесь, чтобы страница не отображала ошибку при любом сбое
 
     def custom_error_page(self):
@@ -147,7 +151,7 @@ class RoundedTabBar(QTabBar):
 
 class Browser(QMainWindow):
     GITHUB_REPO = "FoxGalaxy2MishaKhodakov/WaterWolf"  # Замените на ваше имя пользователя и репозиторий
-    CURRENT_VERSION = "1.3.0"  # Версия текущего браузера
+    CURRENT_VERSION = "1.3.1"  # Версия текущего браузера
 
     def __init__(self):
         super().__init__()
