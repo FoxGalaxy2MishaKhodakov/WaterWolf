@@ -3,6 +3,9 @@ color 2
 
 pip install -r "%~dp0requirements.txt"
 
+cls
+
+color 3
 :: Создание дистрибутива приложения
 pyinstaller --noconfirm --onedir --windowed --icon "%~dp0src-low\icon.ico" --add-data "%~dp0src-low\icons;icons/" --add-data "%~dp0src-low\script.js;." --add-data "%~dp0src-low\password.txt;." --add-data "%~dp0src-low\icon.ico;." --add-data "%~dp0src-low\start_page.html;." --add-data "%~dp0src-low\styles.css;." --add-data "%~dp0src-low\background.jpg;." --add-data "%~dp0src-low\config.ini;."  "%~dp0src-low\browser.py"
 
@@ -19,10 +22,12 @@ powershell Compress-Archive -Path "_internal", "browser.exe", "black-web.txt" -D
 :: Архивация всей папки browser в browser.zip
 cd ..
 powershell Compress-Archive -Path "browser" -DestinationPath "%~dp0src-installer\browser.zip"
-
+cls
+color 4
 pyinstaller --noconfirm --onefile --windowed --icon "%~dp0src-low\icon.ico" --add-data "%~dp0src-installer\background.png;." --add-data "%~dp0src-installer\browser.zip;."  "%~dp0src-installer\installer.py"
 xcopy "%~dp0dist\dist\installer.exe" "%~dp0ready\" /Y
-
+cls
+color 5
 if exist "build" (
     rd /s /q "build"
     echo Папка build успешно удалена.
@@ -73,5 +78,7 @@ if exist "browser.zip" (
     echo Файл browser.zip не найден.
 )
 
+cls
+color 6
 echo WaterWolf was compiled successfully
 pause
