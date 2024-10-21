@@ -17,7 +17,8 @@ from telegram.ext import Updater, CommandHandler, CallbackContext
 import ctypes
 
 #Параметры
-safe_mode = 0
+safe_mode = 0 #Безопасный режим
+anonymus = 0 #Режим инкогнито
 
 def is_user_admin():
     try:
@@ -31,7 +32,7 @@ class CustomWebEnginePage(QWebEnginePage):
         self.browser_window = parent
 
         # Формируем User-Agent с названием браузера WaterWolf и операционной системой
-        user_agent = f"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0) Gecko/20100101 Firefox/130.0"
+        user_agent = f"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.0"
 
         # Устанавливаем кастомный User-Agent
         self.profile = QWebEngineProfile.defaultProfile()
@@ -75,11 +76,12 @@ class CustomWebEnginePage(QWebEnginePage):
         """
 
     def save_history(self, url):
-        if is_user_admin():
-            history_dir = os.path.join(sys.path[0], '..', '..', 'history.txt')
-            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            with open(history_dir, 'a') as f:
-                f.write(f'{current_time} - {url}\n')
+        if anonymus == 0:
+            if is_user_admin():
+                history_dir = os.path.join(sys.path[0], '..', '..', 'history.txt')
+                current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                with open(history_dir, 'a') as f:
+                    f.write(f'{current_time} - {url}\n')
 
     def is_site_blocked(self, url):
         # Чтение черного списка сайтов
@@ -151,7 +153,7 @@ class RoundedTabBar(QTabBar):
 
 class Browser(QMainWindow):
     GITHUB_REPO = "FoxGalaxy2MishaKhodakov/WaterWolf"  # Замените на ваше имя пользователя и репозиторий
-    CURRENT_VERSION = "1.3.1"  # Версия текущего браузера
+    CURRENT_VERSION = "1.3.2"  # Версия текущего браузера
 
     def __init__(self):
         super().__init__()
